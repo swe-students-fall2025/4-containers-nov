@@ -8,6 +8,7 @@ import torch
 
 MODEL_PATH = Path("models/gesture_mlp.pt")
 
+
 class GestureMLP(torch.nn.Module):
     def __init__(self, input_dim: int, num_classes: int):
         super().__init__()

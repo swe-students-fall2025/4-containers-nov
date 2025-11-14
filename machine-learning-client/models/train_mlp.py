@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
 DATA_DIR = Path("data")
@@ -37,7 +37,7 @@ def load_data():
     X = np.load(X_PATH)  # (N, 63)
     y = np.load(Y_PATH)
 
-    with open(CLASSES_PATH, "r") as f:
+    with open(CLASSES_PATH, "r", encoding="utf-8") as f:
         class_names = json.load(f)
 
     print(f"[INFO] Loaded X: {X.shape}, y: {y.shape}")
