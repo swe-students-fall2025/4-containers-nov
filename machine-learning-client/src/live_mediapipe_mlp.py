@@ -1,4 +1,3 @@
-# pylint: skip-file
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -6,6 +5,7 @@ import torch
 from pathlib import Path
 
 MODEL_PATH = Path("models/gesture_mlp.pt")
+
 
 class GestureMLP(torch.nn.Module):
     def __init__(self, input_dim: int, num_classes: int):

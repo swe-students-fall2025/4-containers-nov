@@ -1,4 +1,3 @@
-# pylint: skip-file
 from __future__ import annotations
 
 import json
@@ -38,7 +37,9 @@ NUM_LANDMARKS = 21
 DIM_PER_LM = 3
 
 
-def collect_image_paths(root: Path, classes: List[str], max_per_class: int) -> List[Tuple[Path, int]]:
+def collect_image_paths(
+    root: Path, classes: List[str], max_per_class: int
+) -> List[Tuple[Path, int]]:
     samples: List[Tuple[Path, int]] = []
     exts = {".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"}
 
@@ -47,10 +48,7 @@ def collect_image_paths(root: Path, classes: List[str], max_per_class: int) -> L
         if not cls_dir.exists():
             raise FileNotFoundError(f"Class folder not found: {cls_dir}")
 
-        img_paths = [
-            p for p in cls_dir.rglob("*")
-            if p.is_file() and p.suffix in exts
-        ]
+        img_paths = [p for p in cls_dir.rglob("*") if p.is_file() and p.suffix in exts]
 
         if not img_paths:
             raise RuntimeError(f"No images found in {cls_dir}")
