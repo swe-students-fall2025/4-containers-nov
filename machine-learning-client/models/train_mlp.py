@@ -32,6 +32,7 @@ class GestureMLP(nn.Module):
     def forward(self, x):
         return self.net(x)
 
+
 def load_data():
     X = np.load(X_PATH)  # (N, 63)
     y = np.load(Y_PATH)
