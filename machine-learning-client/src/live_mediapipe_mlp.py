@@ -1,13 +1,17 @@
 from pathlib import Path
-
+from datetime import datetime, timezone 
 import cv2
 import mediapipe as mp
 import numpy as np
 import torch
-
+from pymongo import MongoClient
 
 MODEL_PATH = Path("models/gesture_mlp.pt")
 
+# MongoDB connection (localhost:27017 → handsense.gesture_events)
+mongo_client = MongoClient("mongodb://localhost:27017")
+mongo_db = mongo_client["handsense"]
+gesture_collection = mongo_db["gesture_events"]
 
 class GestureMLP(torch.nn.Module):
     def __init__(self, input_dim: int, num_classes: int):
@@ -79,11 +83,13 @@ def main():
         if not ret:
             break
 
+        pred_label = "No Hand"
+        confidence = 0.0
+        handedness = "Unknown"
+
         # BGR → RGB
         img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = hands.process(img_rgb)
-
-        pred_label = "No Hand"
 
         if result.multi_hand_landmarks:
             for hand_landmarks in result.multi_hand_landmarks:
@@ -97,6 +103,17 @@ def main():
                     pred_label = class_names[pred]
 
                 mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+                
+                # Write events into MongoDB
+                event = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "gesture": pred_label,
+                    "confidence": confidence,
+                    "handedness": handedness,
+                }
+                gesture_collection.insert_one(event)
+                print("[DB] Inserted:", event)
+
 
         # Print
         cv2.putText(
