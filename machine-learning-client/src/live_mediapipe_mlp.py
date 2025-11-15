@@ -9,13 +9,29 @@ from pymongo import MongoClient
 
 MODEL_PATH = Path("models/gesture_mlp.pt")
 
-# MongoDB connection (localhost:27017 → handsense.gesture_events)
-mongo_client = MongoClient("mongodb://localhost:27017")
-mongo_client.admin.command("ping")
-print("[INFO] MongoDB connected successfully!")
-mongo_db = mongo_client["handsense"]
-gesture_collection = mongo_db["gesture_events"]
+# Avoid connecting to MongoDB at import time so that pytest / CI
+# can import this module without requiring a running database.
+mongo_client = None
+mongo_db = None
+gesture_collection = None 
 
+def init_db(uri: str = "mongodb://localhost:27017") -> None:
+    """
+    MongoDB connection (localhost:27017 → handsense.gesture_events)
+
+    This is called at runtime (e.g., in main()), not at import time,
+    to avoid requiring a running database during import.
+    """
+    global mongo_client, mongo_db, gesture_collection
+
+    if mongo_client is not None:
+        return
+
+    mongo_client = MongoClient(uri)
+    mongo_client.admin.command("ping")
+    print("[INFO] MongoDB connected successfully!")
+    mongo_db = mongo_client["handsense"]
+    gesture_collection = mongo_db["gesture_events"]
 
 class GestureMLP(torch.nn.Module):
     def __init__(self, input_dim: int, num_classes: int):
@@ -59,6 +75,8 @@ def extract_keypoints(hand_landmarks):
 
 
 def main():
+    # ---- Initialize MongoDB (runtime only) ----
+    init_db()
     # ---- Load ML model ----
     model, class_names = load_model()
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
