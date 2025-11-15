@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime, timezone
+import time
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -10,6 +11,8 @@ MODEL_PATH = Path("models/gesture_mlp.pt")
 
 # MongoDB connection (localhost:27017 → handsense.gesture_events)
 mongo_client = MongoClient("mongodb://localhost:27017")
+mongo_client.admin.command("ping")
+print("[INFO] MongoDB connected successfully!")
 mongo_db = mongo_client["handsense"]
 gesture_collection = mongo_db["gesture_events"]
 
@@ -79,8 +82,15 @@ def main():
 
     print("[INFO] Running live gesture recognition... Press 'q' to quit.")
 
+    # rate-limiting
+    last_label = None
+    last_logged_at = 0.0
+    MIN_INTERVAL = 1.0  # minimum time (sec) between logging same gesture
+    MIN_CONFIDENCE = 0.8  # ignore predictions below this confidence threshold
+
     while True:
         ret, frame = cap.read()
+        frame = cv2.flip(frame, 1)
         if not ret:
             break
 
@@ -93,32 +103,53 @@ def main():
         result = hands.process(img_rgb)
 
         if result.multi_hand_landmarks:
-            for hand_landmarks in result.multi_hand_landmarks:
+            for hand_landmarks, hand_info in zip(
+                result.multi_hand_landmarks, result.multi_handedness
+            ):
+                # --- Extract 63-dim landmark vector ---
                 kp = extract_keypoints(hand_landmarks)
                 kp_t = torch.from_numpy(kp).float().unsqueeze(0).to(device)
 
-                # PyTorch
+                # --- Model prediction ---
                 with torch.no_grad():
                     logits = model(kp_t)
-                    pred = logits.argmax(dim=1).item()
-                    pred_label = class_names[pred]
+                    prob = torch.softmax(logits, dim=1)
+                    conf, pred_idx = prob.max(dim=1)
+                    pred_label = class_names[pred_idx.item()]
+                    confidence = float(conf.item())
 
+                # --- Handedness ("Left" / "Right") ---
+                handedness = hand_info.classification[0].label
+
+                # Draw visual hand skeleton
                 mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-                # Write events into MongoDB
-                event = {
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                    "gesture": pred_label,
-                    "confidence": confidence,
-                    "handedness": handedness,
-                }
-                gesture_collection.insert_one(event)
-                print("[DB] Inserted:", event)
+                # --- Rate-limit DB writes: log only on change OR after MIN_INTERVAL ---
+                now = time.time()
+                if (
+                    pred_label != "No Hand"
+                    and confidence >= MIN_CONFIDENCE
+                    and (
+                        pred_label != last_label
+                        or (now - last_logged_at) > MIN_INTERVAL
+                    )
+                ):
+                    event = {
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "gesture": pred_label,
+                        "confidence": confidence,
+                        "handedness": handedness,
+                    }
+                    gesture_collection.insert_one(event)
+                    print("[DB] Inserted:", event)
 
-        # Print
+                    last_label = pred_label
+                    last_logged_at = now
+
+        # Display the gesture on screen
         cv2.putText(
             frame,
-            f"Gesture: {pred_label}",
+            f"Gesture: {pred_label} ({confidence:.2f})",
             (10, 40),
             cv2.FONT_HERSHEY_SIMPLEX,
             1.2,
