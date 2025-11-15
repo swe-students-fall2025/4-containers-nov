@@ -7,17 +7,20 @@ import numpy as np
 import torch
 from pymongo import MongoClient
 
+# pylint: disable=global-statement
+
 MODEL_PATH = Path("models/gesture_mlp.pt")
 
 # Avoid connecting to MongoDB at import time so that pytest / CI
 # can import this module without requiring a running database.
 mongo_client = None
 mongo_db = None
-gesture_collection = None 
+gesture_collection = None
+
 
 def init_db(uri: str = "mongodb://localhost:27017") -> None:
     """
-    MongoDB connection (localhost:27017 → handsense.gesture_events)
+    Initialize MongoDB connection (localhost:27017 → handsense.gesture_events).
 
     This is called at runtime (e.g., in main()), not at import time,
     to avoid requiring a running database during import.
@@ -32,6 +35,7 @@ def init_db(uri: str = "mongodb://localhost:27017") -> None:
     print("[INFO] MongoDB connected successfully!")
     mongo_db = mongo_client["handsense"]
     gesture_collection = mongo_db["gesture_events"]
+
 
 class GestureMLP(torch.nn.Module):
     def __init__(self, input_dim: int, num_classes: int):
@@ -67,7 +71,7 @@ def load_model():
 
 
 def extract_keypoints(hand_landmarks):
-    # 21 x (x,y,z) → 63
+    """Extract 21 (x, y, z) hand landmarks into a 63-dim numpy vector."""
     kp = []
     for lm in hand_landmarks.landmark:
         kp.extend([lm.x, lm.y, lm.z])
@@ -77,6 +81,7 @@ def extract_keypoints(hand_landmarks):
 def main():
     # ---- Initialize MongoDB (runtime only) ----
     init_db()
+
     # ---- Load ML model ----
     model, class_names = load_model()
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
@@ -103,8 +108,8 @@ def main():
     # rate-limiting
     last_label = None
     last_logged_at = 0.0
-    MIN_INTERVAL = 1.0  # minimum time (sec) between logging same gesture
-    MIN_CONFIDENCE = 0.8  # ignore predictions below this confidence threshold
+    min_interval = 1.0  # minimum time (sec) between logging same gesture
+    min_confidence = 0.8  # ignore predictions below this confidence threshold
 
     while True:
         ret, frame = cap.read()
@@ -140,16 +145,20 @@ def main():
                 handedness = hand_info.classification[0].label
 
                 # Draw visual hand skeleton
-                mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+                mp_draw.draw_landmarks(
+                    frame,
+                    hand_landmarks,
+                    mp_hands.HAND_CONNECTIONS,
+                )
 
-                # --- Rate-limit DB writes: log only on change OR after MIN_INTERVAL ---
+                # --- Rate-limit DB writes: log only on change OR after min_interval ---
                 now = time.time()
                 if (
                     pred_label != "No Hand"
-                    and confidence >= MIN_CONFIDENCE
+                    and confidence >= min_confidence
                     and (
                         pred_label != last_label
-                        or (now - last_logged_at) > MIN_INTERVAL
+                        or (now - last_logged_at) > min_interval
                     )
                 ):
                     event = {

@@ -1,10 +1,13 @@
+"""Unit tests for extract_keypoints_from_hagrid module."""
+
+# pylint: disable=import-error,too-few-public-methods
+
 import unittest
 import numpy as np
 
 from src import extract_keypoints_from_hagrid as hagrid_mod
 
 
-# ---- Fake landmark structures ----
 class FakeLandmark:
     """Single x,y,z landmark."""
 
@@ -24,8 +27,9 @@ class FakeHandLandmarks:
         ]
 
 
-# ---- Feature extraction tests ----
 class TestExtractLandmarkVector(unittest.TestCase):
+    """Tests for extract_landmark_vector."""
+
     def test_vector_shape_and_dtype(self):
         """Output shape = NUM_LANDMARKS * DIM_PER_LM, dtype = float32."""
         fake = FakeHandLandmarks()
