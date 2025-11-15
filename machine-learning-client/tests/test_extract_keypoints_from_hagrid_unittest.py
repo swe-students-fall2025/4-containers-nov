@@ -22,8 +22,7 @@ class FakeHandLandmarks:
 
     def __init__(self, n_points: int = 21):
         self.landmark = [
-            FakeLandmark(x=i * 0.1, y=i * 0.01, z=i * 0.001)
-            for i in range(n_points)
+            FakeLandmark(x=i * 0.1, y=i * 0.01, z=i * 0.001) for i in range(n_points)
         ]
 
 

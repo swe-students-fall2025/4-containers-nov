@@ -25,8 +25,7 @@ class FakeHandLandmarks:
 
     def __init__(self, n_points: int = 21):
         self.landmark = [
-            FakeLandmark(x=i * 0.1, y=i * 0.01, z=i * 0.001)
-            for i in range(n_points)
+            FakeLandmark(x=i * 0.1, y=i * 0.01, z=i * 0.001) for i in range(n_points)
         ]
 
 
@@ -191,18 +190,17 @@ class TestMainLoopOnce(unittest.TestCase):
         fake_classes = ["palm", "fist", "like"]
         mock_load_model.return_value = (fake_model, fake_classes)
 
-        with mock.patch("src.live_mediapipe_mlp.torch.device", return_value="cpu"), \
-             mock.patch("src.live_mediapipe_mlp.torch.softmax") as mock_softmax:
+        with mock.patch(
+            "src.live_mediapipe_mlp.torch.device", return_value="cpu"
+        ), mock.patch("src.live_mediapipe_mlp.torch.softmax") as mock_softmax:
 
-            mock_softmax.side_effect = (
-                lambda logits, dim: torch.tensor([[0.9, 0.05, 0.05]])
+            mock_softmax.side_effect = lambda logits, dim: torch.tensor(
+                [[0.9, 0.05, 0.05]]
             )
 
             class FakeHandLandmarksInner:
                 def __init__(self):
-                    self.landmark = [
-                        FakeLandmark(0.1, 0.2, 0.3) for _ in range(21)
-                    ]
+                    self.landmark = [FakeLandmark(0.1, 0.2, 0.3) for _ in range(21)]
 
             class FakeHandInfo:
                 class Classification:
