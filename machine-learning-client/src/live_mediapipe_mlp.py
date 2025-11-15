@@ -85,8 +85,8 @@ def main():
     # rate-limiting
     last_label = None
     last_logged_at = 0.0
-    MIN_INTERVAL = 1.0        # minimum time (sec) between logging same gesture
-    MIN_CONFIDENCE = 0.8      # ignore predictions below this confidence threshold
+    MIN_INTERVAL = 1.0  # minimum time (sec) between logging same gesture
+    MIN_CONFIDENCE = 0.8  # ignore predictions below this confidence threshold
 
     while True:
         ret, frame = cap.read()
