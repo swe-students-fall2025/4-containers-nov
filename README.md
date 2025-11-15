@@ -4,6 +4,10 @@
 
 Build a containerized app that uses machine learning. See [instructions](./instructions.md) for details.
 
+# Teammates
+
+Ivan Wang, [Harrison Gao](github.com/HTK-G), Sina Liu, Serena, Hanqi
+
 # Machine Learning Client — Hand Gesture Recognition
 
 This folder contains the **machine-learning-client** subsystem of our 3-container project:
@@ -12,7 +16,7 @@ This folder contains the **machine-learning-client** subsystem of our 3-containe
 - **Web App** (TBD) → visualizes gesture events stored in the database.
 - **MongoDB** → central datastore for gesture metadata.
 
-The ML client runs entirely as a *backend service* (no user-facing UI).  
+The ML client runs entirely as a _backend service_ (no user-facing UI).  
 It processes camera input, performs ML inference, and will later communicate with the database once integrated with the web app.
 
 ---
@@ -53,6 +57,7 @@ machine-learning-client/
 ```bash
 pip install pipenv
 ```
+
 ## 2. Install all ML client dependencies
 
 From the repository root:
@@ -61,6 +66,7 @@ From the repository root:
 cd machine-learning-client
 pipenv install --dev
 ```
+
 This installs all dependencies, including:
 
 - mediapipe
@@ -81,23 +87,26 @@ pipenv run python src/live_mediapipe_mlp.py
 
 You should see:
 
-* a live webcam preview window
+- a live webcam preview window
 
-* detected hand skeletons
+- detected hand skeletons
 
-* predicted gesture label displayed on the frame
+- predicted gesture label displayed on the frame
 
 Press **q** to exit.
 
 # 4. MongoDB Integration
+
 The ML client is already connected to MongoDB using pymongo.
 
 In src/live_mediapipe_mlp.py, a MongoDB database named handsense is created:
+
 ```bash
 mongo_client = MongoClient("mongodb://localhost:27017")
 mongo_db = mongo_client["handsense"]
 gesture_collection = mongo_db["gesture_events"]
 ```
+
 For every detected hand gesture, an event document is inserted:
 
 ```bash
@@ -109,6 +118,7 @@ event = {
 }
 gesture_collection.insert_one(event)
 ```
+
 This allows the Web App subsystem to read and visualize real-time gesture activity from:
 
 ```bash
