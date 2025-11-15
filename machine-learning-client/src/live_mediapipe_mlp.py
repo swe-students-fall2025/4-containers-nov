@@ -6,6 +6,7 @@ import mediapipe as mp
 import numpy as np
 import torch
 from pymongo import MongoClient
+
 # pylint: disable=global-statement
 
 MODEL_PATH = Path("models/gesture_mlp.pt")
