@@ -11,21 +11,15 @@ from pymongo import MongoClient
 
 MODEL_PATH = Path("models/gesture_mlp.pt")
 
-# Avoid connecting to MongoDB at import time so that pytest / CI
-# can import this module without requiring a running database.
 mongo_client = None
 mongo_db = None
 gesture_collection = None
+controls_collection = None
 
 
 def init_db(uri: str = "mongodb://localhost:27017") -> None:
-    """
-    Initialize MongoDB connection (localhost:27017 → handsense.gesture_events).
-
-    This is called at runtime (e.g., in main()), not at import time,
-    to avoid requiring a running database during import.
-    """
-    global mongo_client, mongo_db, gesture_collection
+    """Initialize MongoDB connection (handsense DB)."""
+    global mongo_client, mongo_db, gesture_collection, controls_collection
 
     if mongo_client is not None:
         return
@@ -33,8 +27,23 @@ def init_db(uri: str = "mongodb://localhost:27017") -> None:
     mongo_client = MongoClient(uri)
     mongo_client.admin.command("ping")
     print("[INFO] MongoDB connected successfully!")
+
     mongo_db = mongo_client["handsense"]
     gesture_collection = mongo_db["gesture_events"]
+    controls_collection = mongo_db["controls"]
+
+    # ensure we have a default capture state
+    if controls_collection.find_one({"_id": "capture_control"}) is None:
+        controls_collection.insert_one({"_id": "capture_control", "enabled": False})
+        print("[INFO] Initialized capture_control = False")
+
+
+def should_capture() -> bool:
+    """Read capture state from DB (Flask updates this)."""
+    doc = controls_collection.find_one({"_id": "capture_control"})
+    if doc is None:
+        return False
+    return bool(doc.get("enabled", False))
 
 
 class GestureMLP(torch.nn.Module):
@@ -71,7 +80,7 @@ def load_model():
 
 
 def extract_keypoints(hand_landmarks):
-    """Extract 21 (x, y, z) hand landmarks into a 63-dim numpy vector."""
+    """Extract 21 (x, y, z) hand landmarks into a 63-d vector."""
     kp = []
     for lm in hand_landmarks.landmark:
         kp.extend([lm.x, lm.y, lm.z])
@@ -79,7 +88,9 @@ def extract_keypoints(hand_landmarks):
 
 
 def main():
-    # ---- Initialize MongoDB (runtime only) ----
+    # pylint: disable=too-many-statements
+
+    # ---- Initialize MongoDB ----
     init_db()
 
     # ---- Load ML model ----
@@ -88,7 +99,7 @@ def main():
     model.to(device)
     print(f"[INFO] Using device: {device}")
 
-    # ---- MediaPipe Hands ----
+    # ---- MediaPipe ----
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(
         max_num_hands=1,
@@ -105,13 +116,35 @@ def main():
 
     print("[INFO] Running live gesture recognition... Press 'q' to quit.")
 
-    # rate-limiting
     last_label = None
     last_logged_at = 0.0
-    min_interval = 1.0  # minimum time (sec) between logging same gesture
-    min_confidence = 0.8  # ignore predictions below this confidence threshold
+    min_interval = 1.0
+    min_confidence = 0.8
 
     while True:
+        # --------------------------
+        # 1. Check capture toggle
+        # --------------------------
+        if not should_capture():
+            cv2.imshow(
+                "Live Gesture Recognition (PyTorch + MediaPipe)",
+                cv2.putText(
+                    np.zeros((480, 640, 3), dtype=np.uint8),
+                    "Capture OFF",
+                    (160, 240),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.5,
+                    (0, 0, 255),
+                    4,
+                ),
+            )
+            if cv2.waitKey(200) & 0xFF == ord("q"):
+                break
+            continue
+
+        # --------------------------
+        # 2. If capture ON → Process
+        # --------------------------
         ret, frame = cap.read()
         frame = cv2.flip(frame, 1)
         if not ret:
@@ -121,7 +154,6 @@ def main():
         confidence = 0.0
         handedness = "Unknown"
 
-        # BGR → RGB
         img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = hands.process(img_rgb)
 
@@ -129,11 +161,9 @@ def main():
             for hand_landmarks, hand_info in zip(
                 result.multi_hand_landmarks, result.multi_handedness
             ):
-                # --- Extract 63-dim landmark vector ---
                 kp = extract_keypoints(hand_landmarks)
                 kp_t = torch.from_numpy(kp).float().unsqueeze(0).to(device)
 
-                # --- Model prediction ---
                 with torch.no_grad():
                     logits = model(kp_t)
                     prob = torch.softmax(logits, dim=1)
@@ -141,25 +171,13 @@ def main():
                     pred_label = class_names[pred_idx.item()]
                     confidence = float(conf.item())
 
-                # --- Handedness ("Left" / "Right") ---
                 handedness = hand_info.classification[0].label
+                mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-                # Draw visual hand skeleton
-                mp_draw.draw_landmarks(
-                    frame,
-                    hand_landmarks,
-                    mp_hands.HAND_CONNECTIONS,
-                )
-
-                # --- Rate-limit DB writes: log only on change OR after min_interval ---
+                # rate limiting writes
                 now = time.time()
-                if (
-                    pred_label != "No Hand"
-                    and confidence >= min_confidence
-                    and (
-                        pred_label != last_label
-                        or (now - last_logged_at) > min_interval
-                    )
+                if confidence >= min_confidence and (
+                    pred_label != last_label or (now - last_logged_at) > min_interval
                 ):
                     event = {
                         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -173,7 +191,6 @@ def main():
                     last_label = pred_label
                     last_logged_at = now
 
-        # Display the gesture on screen
         cv2.putText(
             frame,
             f"Gesture: {pred_label} ({confidence:.2f})",
@@ -185,7 +202,6 @@ def main():
         )
 
         cv2.imshow("Live Gesture Recognition (PyTorch + MediaPipe)", frame)
-
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
