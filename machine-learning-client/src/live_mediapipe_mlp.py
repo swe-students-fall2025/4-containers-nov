@@ -5,11 +5,17 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import torch
+import os
 from pymongo import MongoClient
+from pymongo.errors import ServerSelectionTimeoutError
 
 # pylint: disable=global-statement
 
 MODEL_PATH = Path("models/gesture_mlp.pt")
+
+# Add environment variable-based configuration above the global variables.
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "handsense")
 
 mongo_client = None
 mongo_db = None
@@ -17,22 +23,33 @@ gesture_collection = None
 controls_collection = None
 
 
-def init_db(uri: str = "mongodb://localhost:27017") -> None:
-    """Initialize MongoDB connection (handsense DB)."""
+def init_db() -> None:
+    """Initialize MongoDB connection (handsense DB).
+
+    Uses MONGO_URI and MONGO_DB_NAME from environment variables so it works
+    both on localhost and inside Docker (where Mongo runs as `mongodb`).
+    """
     global mongo_client, mongo_db, gesture_collection, controls_collection
 
     if mongo_client is not None:
         return
 
-    mongo_client = MongoClient(uri)
-    mongo_client.admin.command("ping")
-    print("[INFO] MongoDB connected successfully!")
+    try:
+        # Shorter timeout so we fail fast if Mongo is not available
+        mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
+        # Simple ping to check the connection
+        mongo_client.admin.command("ping")
+    except ServerSelectionTimeoutError as exc:
+        print(f"[ERROR] Could not connect to MongoDB at {MONGO_URI}: {exc}")
+        raise
 
-    mongo_db = mongo_client["handsense"]
+    print(f"[INFO] MongoDB connected successfully at {MONGO_URI}")
+
+    mongo_db = mongo_client[MONGO_DB_NAME]
     gesture_collection = mongo_db["gesture_events"]
     controls_collection = mongo_db["controls"]
 
-    # ensure we have a default capture state
+    # Make sure we always have a default capture state document
     if controls_collection.find_one({"_id": "capture_control"}) is None:
         controls_collection.insert_one({"_id": "capture_control", "enabled": False})
         print("[INFO] Initialized capture_control = False")
