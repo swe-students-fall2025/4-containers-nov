@@ -88,6 +88,9 @@ def extract_keypoints(hand_landmarks):
 
 
 def main():
+    # pylint: disable=too-many-statements
+
+
     # ---- Initialize MongoDB ----
     init_db()
 
@@ -124,16 +127,18 @@ def main():
         # 1. Check capture toggle
         # --------------------------
         if not should_capture():
-            cv2.imshow("Live Gesture Recognition (PyTorch + MediaPipe)",
-                       cv2.putText(
-                           np.zeros((480,640,3), dtype=np.uint8),
-                           "Capture OFF",
-                           (160,240),
-                           cv2.FONT_HERSHEY_SIMPLEX,
-                           1.5,
-                           (0,0,255),
-                           4
-                       ))
+            cv2.imshow(
+                "Live Gesture Recognition (PyTorch + MediaPipe)",
+                cv2.putText(
+                    np.zeros((480, 640, 3), dtype=np.uint8),
+                    "Capture OFF",
+                    (160, 240),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.5,
+                    (0, 0, 255),
+                    4,
+                ),
+            )
             if cv2.waitKey(200) & 0xFF == ord("q"):
                 break
             continue
@@ -172,9 +177,8 @@ def main():
 
                 # rate limiting writes
                 now = time.time()
-                if (
-                    confidence >= min_confidence and
-                    (pred_label != last_label or (now - last_logged_at) > min_interval)
+                if confidence >= min_confidence and (
+                    pred_label != last_label or (now - last_logged_at) > min_interval
                 ):
                     event = {
                         "timestamp": datetime.now(timezone.utc).isoformat(),
