@@ -1,6 +1,9 @@
 [MASTER]
 ignore=tests
 
+[TYPECHECK]
+ignored-modules=cv2,mediapipe,torch
+
 [MESSAGES CONTROL]
 disable=
     C0114,  # missing-module-docstring
