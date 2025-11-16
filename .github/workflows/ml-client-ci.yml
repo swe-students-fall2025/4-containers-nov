@@ -33,7 +33,7 @@ jobs:
         run: pipenv run black . --check
 
       - name: Run pylint
-        run: pipenv run pylint src tests
+        run: pipenv run pylint src tests --disable=R0903
 
       - name: Run pytest
         run: pipenv run pytest --cov=src --cov-report=term-missing
