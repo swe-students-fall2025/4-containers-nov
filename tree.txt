@@ -1,0 +1,56 @@
+.
+├── instructions.md
+├── LICENSE
+├── machine-learning-client
+│   ├── data
+│   │   ├── hagrid_keypoints_X.npy
+│   │   └── hagrid_keypoints_y.npy
+│   ├── models
+│   │   ├── gesture_mlp.pt
+│   │   └── train_mlp.py
+│   ├── Pipfile
+│   ├── Pipfile.lock
+│   ├── src
+│   │   ├── extract_keypoints_from_hagrid.py
+│   │   └── live_mediapipe_mlp.py
+│   ├── test_mongo.py
+│   └── tests
+│       ├── test_extract_keypoints_from_hagrid_unittest.py
+│       └── test_live_mediapipe_mlp_unittest.py
+├── README.md
+├── tree.txt
+└── web-app
+    ├── app.py
+    ├── Pipfile
+    ├── Pipfile.lock
+    ├── readme.txt
+    ├── static
+    │   ├── audios
+    │   │   ├── among_us.mp3
+    │   │   ├── android_beep.mp3
+    │   │   ├── bom.mp3
+    │   │   ├── error.mp3
+    │   │   ├── playme.mp3
+    │   │   ├── rick_roll.mp3
+    │   │   ├── rizz.mp3
+    │   │   ├── sponge_bob.mp3
+    │   │   └── uwu.mp3
+    │   ├── hagrid_classes.json
+    │   ├── images
+    │   │   ├── fist.png
+    │   │   ├── like.png
+    │   │   ├── ok.png
+    │   │   ├── one.png
+    │   │   ├── palm.png
+    │   │   ├── stop.png
+    │   │   ├── thinking.png
+    │   │   ├── three.png
+    │   │   └── two_up.png
+    │   ├── script.js
+    │   └── style.css
+    ├── templates
+    │   └── index.html
+    ├── test_pymongo.py
+    └── tests
+
+12 directories, 42 files

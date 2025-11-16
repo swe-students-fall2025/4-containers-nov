@@ -13,6 +13,8 @@ pytest = "*"
 pytest-flask = "*"
 
 [dev-packages]
+black = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.10"

@@ -1,0 +1,32 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gesture Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div class="team-name">Team Nov</div>
+      <button id="mute-btn" class="mute-btn">🔊</button>
+    </header>
+
+    <div class="emoji-container">
+      <img
+        id="gesture-img"
+        class="gesture-img"
+        src="{{ url_for('static', filename='images/thinking.png') }}"
+      />
+    </div>
+
+    <div class="controls">
+      <button id="toggle-btn" class="toggle-btn">Start Capture</button>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
