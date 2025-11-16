@@ -1,10 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
-import os
 
 app = Flask(__name__)
 
-MONGO_URI =  "mongodb://localhost:27017"
+MONGO_URI = "mongodb://localhost:27017"
 print("💡 MONGO_URI =", MONGO_URI)
 
 print("🔌 Connecting to MongoDB...")
@@ -39,9 +38,8 @@ def get_latest():
         "gesture": doc.get("gesture"),
         "confidence": doc.get("confidence"),
         "handedness": doc.get("handedness"),
-        "timestamp": doc.get("timestamp")
+        "timestamp": doc.get("timestamp"),
     }
-
 
 
 @app.route("/api/control", methods=["POST"])
@@ -54,9 +52,7 @@ def control_capture():
     enabled = data.get("enabled", False)
 
     controls.update_one(
-        {"_id": "capture_control"},
-        {"$set": {"enabled": enabled}},
-        upsert=True
+        {"_id": "capture_control"}, {"$set": {"enabled": enabled}}, upsert=True
     )
 
     return jsonify({"status": "ok", "enabled": enabled})

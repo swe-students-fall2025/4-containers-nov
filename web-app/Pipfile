@@ -4,13 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pylint = "*"
-black = "*"
 flask = "*"
 pymongo = "*"
 coverage = "*"
 pytest = "*"
 pytest-flask = "*"
+black = "*"
+pylint = "*"
 
 [dev-packages]
 black = "*"
