@@ -90,7 +90,6 @@ def extract_keypoints(hand_landmarks):
 def main():
     # pylint: disable=too-many-statements
 
-
     # ---- Initialize MongoDB ----
     init_db()
 
