@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 
 app = Flask(__name__)
 
@@ -11,11 +12,12 @@ try:
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
     client.server_info()  # Force connection (otherwise lazy connection hides errors)
     print("✅ MongoDB connected")
-except Exception as e:
+except PyMongoError as e:
     print("❌ MongoDB connection FAILED:", e)
 
 db = client["handsense"]
 print("📁 DB Loaded:", db)
+
 
 events = db["gesture_events"]
 controls = db["controls"]
