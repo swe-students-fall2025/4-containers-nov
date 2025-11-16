@@ -4,13 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+numpy = "*"
+pymongo = "*"
+
+# Linting tools
 pylint = "*"
 black = "*"
-numpy = "*"
-opencv-python = "*"
-mediapipe = "*"
-torch = "*"
-pymongo = "*"
+
+# Testing tools
+pytest = "*"
+pytest-cov = "*"
 
 [dev-packages]
 
