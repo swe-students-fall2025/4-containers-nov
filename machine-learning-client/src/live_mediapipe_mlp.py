@@ -1,13 +1,14 @@
 from pathlib import Path
 from datetime import datetime, timezone
 import time
+import os
+
 import cv2
 import mediapipe as mp
 import numpy as np
 import torch
-import os
 from pymongo import MongoClient
-from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.errors import PyMongoError
 
 # pylint: disable=global-statement
 
@@ -39,9 +40,9 @@ def init_db() -> None:
         mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
         # Simple ping to check the connection
         mongo_client.admin.command("ping")
-    except ServerSelectionTimeoutError as exc:
-        print(f"[ERROR] Could not connect to MongoDB at {MONGO_URI}: {exc}")
-        raise
+    except PyMongoError as e:
+        print("[ERROR] Could not connect to MongoDB:", e)
+        return
 
     print(f"[INFO] MongoDB connected successfully at {MONGO_URI}")
 
