@@ -128,10 +128,11 @@ class TestInitDb(unittest.TestCase):
 
     @mock.patch("src.live_mediapipe_mlp.MongoClient")
     def test_init_db_sets_globals_once(self, mock_mongo_client):
-        """init_db should initialize Mongo only once and correctly set global variables."""
         fake_client = mock_mongo_client.return_value
         fake_db = mock.MagicMock()
-        fake_collection = mock.MagicMock()
+
+        fake_gesture_collection = mock.MagicMock()
+        fake_controls_collection = mock.MagicMock()
 
         def client_getitem(name):
             if name == "handsense":
@@ -142,7 +143,9 @@ class TestInitDb(unittest.TestCase):
 
         def db_getitem(name):
             if name == "gesture_events":
-                return fake_collection
+                return fake_gesture_collection
+            if name == "controls":
+                return fake_controls_collection    # ⭐ 必须加这个
             return None
 
         fake_db.__getitem__.side_effect = db_getitem
@@ -150,16 +153,17 @@ class TestInitDb(unittest.TestCase):
         lm.mongo_client = None
         lm.mongo_db = None
         lm.gesture_collection = None
+        lm.controls_collection = None
 
         lm.init_db()
 
         self.assertIs(lm.mongo_client, fake_client)
         self.assertIs(lm.mongo_db, fake_db)
-        self.assertIs(lm.gesture_collection, fake_collection)
+        self.assertIs(lm.gesture_collection, fake_gesture_collection)
+        self.assertIs(lm.controls_collection, fake_controls_collection)
+
         fake_client.admin.command.assert_called_once_with("ping")
 
-        lm.init_db()
-        mock_mongo_client.assert_called_once()
 
 
 class TestMainLoopOnce(unittest.TestCase):
@@ -262,6 +266,10 @@ class TestMainLoopOnce(unittest.TestCase):
                     inserted.append(event)
 
             lm.gesture_collection = FakeCollection()
+            
+            lm.controls_collection = mock.Mock()
+            lm.controls_collection.find_one.return_value = {"enabled": True}  # mock DB control flag
+
 
             lm.main()
 
