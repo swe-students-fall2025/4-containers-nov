@@ -48,7 +48,8 @@ jobs:
         run: pipenv run pylint app.py
 
       - name: Run tests with coverage
-        run: pipenv run pytest \
-          --cov=app \
-          --cov-report=term-missing \
-          --cov-fail-under=80
+        run: |
+          pipenv run pytest tests/ \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-fail-under=80
