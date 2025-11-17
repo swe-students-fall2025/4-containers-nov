@@ -36,7 +36,9 @@ class FakeControlsCollection:
         # Default document used by the web app
         self.doc = {"_id": "capture_control", "enabled": False}
 
-    def update_one(self, _filter, update, upsert=False):  # pylint: disable=unused-argument
+    def update_one(
+        self, _filter, update, upsert=False
+    ):  # pylint: disable=unused-argument
         """Update the enabled flag based on the request body."""
         if "$set" in update:
             self.doc.update(update["$set"])
@@ -59,7 +61,9 @@ def fake_controls():
 
 
 @pytest.fixture
-def app(monkeypatch, fake_events, fake_controls):  # pylint: disable=redefined-outer-name
+def app(
+    monkeypatch, fake_events, fake_controls
+):  # pylint: disable=redefined-outer-name
     """
     pytest-flask fixture.
 
