@@ -6,7 +6,7 @@ Build a containerized app that uses machine learning. See [instructions](./instr
 
 # Teammates
 
-Ivan Wang, [Harrison Gao](https://github.com/HTK-G), Sina Liu, Serena, Hanqi
+Ivan Wang, [Harrison Gao](https://github.com/HTK-G), [Sina Liu](https://github.com/SinaL0123), Serena, Hanqi
 
 # Machine Learning Client — Hand Gesture Recognition
 
@@ -94,6 +94,29 @@ You should see:
 - predicted gesture label displayed on the frame
 
 Press **q** to exit.
+
+## Note About Running the ML Client in Docker on macOS
+
+On macOS, Docker containers cannot easily access the host webcam, because the macOS camera is not exposed as a Linux-style /dev/video0 device inside containers.
+For this reason, the live gesture recognition demo cannot run inside the Docker container on macOS.
+
+During development and demo, we run the ML client directly on the host machine, where the webcam works normally:
+
+```bash
+pipenv run python src/live_mediapipe_mlp.py
+```
+
+The Docker image of the ML client is still fully functional for:
+
+- CI / GitHub Actions
+
+- dependency isolation
+
+- database integration tests
+
+- running without a webcam (e.g., headless mode)
+
+This behavior is expected on macOS and does not affect the overall functionality of the 3-container system.
 
 # 4. MongoDB Integration
 

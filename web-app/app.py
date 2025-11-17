@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request, jsonify
+import os
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
 app = Flask(__name__)
 
-MONGO_URI = "mongodb://localhost:27017"
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "handsense")
+
 print("💡 MONGO_URI =", MONGO_URI)
 
 print("🔌 Connecting to MongoDB...")
@@ -15,7 +18,7 @@ try:
 except PyMongoError as e:
     print("❌ MongoDB connection FAILED:", e)
 
-db = client["handsense"]
+db = client[MONGO_DB_NAME]
 print("📁 DB Loaded:", db)
 
 
