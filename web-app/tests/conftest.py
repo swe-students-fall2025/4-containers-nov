@@ -3,12 +3,17 @@ from pathlib import Path
 
 import pytest
 
+# This file is only used in tests; in CI pylint cannot resolve dynamic imports
+# for app.py, so we ignore import-error here.
+# pylint: disable=import-error
+
 # Make sure the parent folder (where app.py lives) is on sys.path
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-import app as web_app  # noqa: E402  pylint: disable=wrong-import-position
+# Import the whole app module so we can patch its globals (events, controls)
+import app as app_module  # noqa: E402  pylint: disable=wrong-import-position
 
 
 class FakeEventsCollection:
@@ -28,7 +33,7 @@ class FakeControlsCollection:
     """Fake collection for controls (capture_control document)."""
 
     def __init__(self):
-        # default document used by the web app
+        # Default document used by the web app
         self.doc = {"_id": "capture_control", "enabled": False}
 
     def update_one(self, _filter, update, upsert=False):  # pylint: disable=unused-argument
@@ -54,13 +59,16 @@ def fake_controls():
 
 
 @pytest.fixture
-def app(monkeypatch, fake_events, fake_controls):
+def app(monkeypatch, fake_events, fake_controls):  # pylint: disable=redefined-outer-name
     """
     pytest-flask fixture.
 
     Patch the real Mongo collections in app.py with our fake ones so that
     tests do not require a running MongoDB instance.
     """
-    monkeypatch.setattr(web_app, "events", fake_events)
-    monkeypatch.setattr(web_app, "controls", fake_controls)
-    return web_app.app  # this is the Flask application defined in app.py
+    # Patch the module-level globals used by the Flask routes
+    monkeypatch.setattr(app_module, "events", fake_events)
+    monkeypatch.setattr(app_module, "controls", fake_controls)
+
+    # Return the Flask app object for pytest-flask
+    return app_module.app
