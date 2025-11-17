@@ -51,7 +51,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           . $(pipenv --venv)/bin/activate
-          PYTHONPATH=. pipenv run pytest \
+          PYTHONPATH=. pytest \
             --cov=src \ 
             --cov-report=term-missing \
             --cov-fail-under=80
