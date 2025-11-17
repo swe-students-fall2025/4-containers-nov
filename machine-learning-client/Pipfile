@@ -19,6 +19,7 @@ coverage = "*"
 black = "*"
 pylint = "*"
 tomli = "*"
+dill = "*"
 
 [requires]
 python_version = "3.10"
