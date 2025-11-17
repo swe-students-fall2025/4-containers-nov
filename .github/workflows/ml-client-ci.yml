@@ -35,8 +35,6 @@ jobs:
       - name: Install dependencies with pipenv
         run: |
           pipenv install --dev --deploy --python $(which python)
-          pipenv run pip uninstall -y torch
-          pipenv run pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
       - name: Run black (format check)
         run: pipenv run black --check .
@@ -52,7 +50,8 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-            PYTHONPATH=. pipenv run pytest \
+          . $(pipenv --venv)/bin/activate
+          PYTHONPATH=. pipenv run pytest \
             --cov=src \ 
             --cov-report=term-missing \
             --cov-fail-under=80
