@@ -6,7 +6,19 @@ import unittest
 from unittest import mock
 
 import numpy as np
-import torch
+import pytest
+
+# Conditional import of torch to skip tests if not available
+try:
+    import torch
+except (ImportError, OSError):
+    torch = None
+
+if torch is None:
+    pytest.skip(
+        "Skipping live_mediapipe_mlp tests: torch not available or CUDA deps missing",
+        allow_module_level=True,
+    )
 
 from src import live_mediapipe_mlp as lm
 
