@@ -145,7 +145,7 @@ class TestInitDb(unittest.TestCase):
             if name == "gesture_events":
                 return fake_gesture_collection
             if name == "controls":
-                return fake_controls_collection    # ⭐ 必须加这个
+                return fake_controls_collection  # ⭐ 必须加这个
             return None
 
         fake_db.__getitem__.side_effect = db_getitem
@@ -163,7 +163,6 @@ class TestInitDb(unittest.TestCase):
         self.assertIs(lm.controls_collection, fake_controls_collection)
 
         fake_client.admin.command.assert_called_once_with("ping")
-
 
 
 class TestMainLoopOnce(unittest.TestCase):
@@ -266,10 +265,11 @@ class TestMainLoopOnce(unittest.TestCase):
                     inserted.append(event)
 
             lm.gesture_collection = FakeCollection()
-            
-            lm.controls_collection = mock.Mock()
-            lm.controls_collection.find_one.return_value = {"enabled": True}  # mock DB control flag
 
+            lm.controls_collection = mock.Mock()
+            lm.controls_collection.find_one.return_value = {
+                "enabled": True
+            }  # mock DB control flag
 
             lm.main()
 
