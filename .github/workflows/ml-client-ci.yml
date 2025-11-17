@@ -42,7 +42,8 @@ jobs:
         run: pipenv run pylint src tests
 
       - name: Run tests with coverage
-        run: pipenv run pytest \
-          --cov=src \
-          --cov-report=term-missing \
-          --cov-fail-under=80
+        run: |
+          pipenv run pytest \
+            --cov=src \ 
+            --cov-report=term-missing \
+            --cov-fail-under=80
