@@ -10,7 +10,7 @@ import pytest
 
 # Conditional import of torch to skip tests if not available
 try:
-    import torch 
+    import torch
 except Exception:
     torch = None
 
