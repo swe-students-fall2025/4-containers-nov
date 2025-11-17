@@ -49,6 +49,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
+            pwd
             cd machine-learning-client
             pipenv run pytest tests/ \
             --cov=src \ 
