@@ -13,6 +13,7 @@ torch = "*"
 pymongo = "*"
 dill = "*"
 tomli = "*"
+colorama = "*"
 
 [dev-packages]
 pytest = "*"
