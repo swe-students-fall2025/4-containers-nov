@@ -40,6 +40,12 @@ jobs:
 
       - name: Run pylint
         run: pipenv run pylint src tests
+      
+      - name: List files for debugging
+        run: |
+          echo "Current working directory: $(pwd)"
+          echo "Listing all files recursively..."
+          ls -R
 
       - name: Run tests with coverage
         run: |
