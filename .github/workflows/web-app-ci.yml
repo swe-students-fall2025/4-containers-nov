@@ -20,11 +20,11 @@ jobs:
       run:
         working-directory: web-app
 
-      services:
-        mongodb:
-          image: mongo:latest
-          ports:
-            - 27017:27017
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
 
     steps:
       - name: Checkout code
