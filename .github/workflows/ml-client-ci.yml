@@ -1,0 +1,48 @@
+name: Machine Learning Client CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'machine-learning-client/**'
+      - '.github/workflows/ml-client-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'machine-learning-client/**'
+      - '.github/workflows/ml-client-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: machine-learning-client
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies with pipenv
+        run: pipenv install --dev --deploy
+
+      - name: Run black (format check)
+        run: pipenv run black --check .
+
+      - name: Run pylint
+        run: pipenv run pylint src tests
+
+      - name: Run tests with coverage
+        run: pipenv run pytest \
+          --cov=src \
+          --cov-report=term-missing \
+          --cov-fail-under=80
