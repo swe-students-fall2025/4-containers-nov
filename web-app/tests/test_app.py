@@ -1,6 +1,7 @@
 """Basic integration tests for the Flask web app."""
 
 from datetime import datetime
+
 # pylint: disable=import-error
 from app import format_ts
 
