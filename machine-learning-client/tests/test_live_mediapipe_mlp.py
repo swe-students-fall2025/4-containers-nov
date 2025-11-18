@@ -356,6 +356,8 @@ class TestMainLoopCaptureOff(unittest.TestCase):
         # Make waitKey return 'q' to exit the loop immediately
         mock_cv2.waitKey.return_value = ord("q")
 
+        mock_load_model.return_value = (mock.MagicMock(), [])
+
         lm.main()
 
         # Assert that the "Capture OFF" text was shown

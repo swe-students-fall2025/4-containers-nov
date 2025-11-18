@@ -3,10 +3,10 @@
 # pylint: disable=import-error,too-few-public-methods
 
 import unittest
-import numpy as np
-
 from unittest import mock
 from pathlib import Path
+
+import numpy as np
 
 from src import extract_keypoints_from_hagrid as hagrid_mod
 
@@ -47,10 +47,11 @@ class TestExtractLandmarkVector(unittest.TestCase):
 class TestCollectImagePaths(unittest.TestCase):
     """Tests for collect_image_paths (lines 36-68)."""
 
+    @mock.patch("pathlib.Path.is_file", return_value=True)
     @mock.patch("src.extract_keypoints_from_hagrid.random.shuffle")
     @mock.patch("pathlib.Path.rglob")
     @mock.patch("pathlib.Path.exists")
-    def test_collect_paths_logic(self, mock_exists, mock_rglob, mock_shuffle):
+    def test_collect_paths_logic(self, mock_exists, mock_rglob, mock_shuffle, mock_is_file, pylint: disable=unused-argument):
         """Test collection, filtering, and shuffling of image paths."""
 
         mock_exists.return_value = True
@@ -60,7 +61,7 @@ class TestCollectImagePaths(unittest.TestCase):
             Path("fake/palm/2.png"),
             Path("fake/palm/3.txt"),
             Path("fake/palm/4.JPG"),
-            Path("fake/palm/archive.zip"),
+            Path("fake.zip"),
         ]
         mock_rglob.return_value = mock_paths
 
@@ -75,7 +76,7 @@ class TestCollectImagePaths(unittest.TestCase):
         self.assertEqual(mock_shuffle.call_count, 2)
 
     @mock.patch("pathlib.Path.exists", return_value=False)
-    def test_collect_paths_dir_not_found(self, mock_exists):
+    def test_collect_paths_dir_not_found(self, mock_exists, pylint: disable=unused-argument):
         """Test that it raises FileNotFoundError if class dir doesn't exist."""
 
         with self.assertRaises(FileNotFoundError):
