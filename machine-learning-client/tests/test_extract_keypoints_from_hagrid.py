@@ -51,7 +51,9 @@ class TestCollectImagePaths(unittest.TestCase):
     @mock.patch("src.extract_keypoints_from_hagrid.random.shuffle")
     @mock.patch("pathlib.Path.rglob")
     @mock.patch("pathlib.Path.exists")
-    def test_collect_paths_logic(self, mock_exists, mock_rglob, mock_shuffle, mock_is_file, pylint: disable=unused-argument):
+    def test_collect_paths_logic(
+        self, mock_exists, mock_rglob, mock_shuffle, _mock_is_file
+    ):  # pylint: disable=unused-argument
         """Test collection, filtering, and shuffling of image paths."""
 
         mock_exists.return_value = True
@@ -76,7 +78,9 @@ class TestCollectImagePaths(unittest.TestCase):
         self.assertEqual(mock_shuffle.call_count, 2)
 
     @mock.patch("pathlib.Path.exists", return_value=False)
-    def test_collect_paths_dir_not_found(self, mock_exists, pylint: disable=unused-argument):
+    def test_collect_paths_dir_not_found(
+        self, _mock_exists
+    ):  # pylint: disable=unused-argument
         """Test that it raises FileNotFoundError if class dir doesn't exist."""
 
         with self.assertRaises(FileNotFoundError):
