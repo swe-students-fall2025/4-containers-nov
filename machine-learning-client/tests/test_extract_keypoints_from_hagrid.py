@@ -136,26 +136,25 @@ class TestCollectImagePaths(unittest.TestCase):
 class TestMainFunction(unittest.TestCase):
     """Tests for the main() function logic, using heavy mocking."""
 
-    @patch("src.extract_keypoints_from_hagrid.collect_image_paths")
-    @patch("src.extract_keypoints_from_hagrid.cv2.imread")
-    @patch("src.extract_keypoints_from_hagrid.mp_hands.Hands")
-    @patch("src.extract_keypoints_from_hagrid.np.save")
-    @patch("src.extract_keypoints_from_hagrid.Path.mkdir")
-    @patch("builtins.open")
+    @mock.patch("src.extract_keypoints_from_hagrid.collect_image_paths")
+    @mock.patch("src.extract_keypoints_from_hagrid.cv2.imread")
+    @mock.patch("src.extract_keypoints_from_hagrid.mp_hands.Hands")
+    @mock.patch("src.extract_keypoints_from_hagrid.np.save")
+    @mock.patch("src.extract_keypoints_from_hagrid.Path.mkdir")
+    @mock.patch("builtins.open")
     def test_main_handles_image_read_failure(
         self,
-        mock_open,
-        mock_mkdir,
-        mock_np_save,
+        _mock_open,
+        _mock_mkdir,
+        _mock_np_save,
         mock_hands_class,
         mock_imread,
         mock_collect,
     ):
+        # pylint: disable=too-many-arguments
 
         mock_collect.return_value = [(Path("fake/img.jpg"), 0)]
-
         mock_imread.return_value = None
-
         mock_hands_instance = mock_hands_class.return_value.__enter__.return_value
         mock_hands_instance.process.return_value = None
 
@@ -163,31 +162,27 @@ class TestMainFunction(unittest.TestCase):
             hagrid_mod.main()
 
         self.assertIn("No samples with detected hands", str(context.exception))
-
         mock_imread.assert_called_with("fake/img.jpg")
 
-    @patch("src.extract_keypoints_from_hagrid.collect_image_paths")
-    @patch("src.extract_keypoints_from_hagrid.cv2.imread")
-    @patch("src.extract_keypoints_from_hagrid.mp_hands.Hands")
-    @patch("src.extract_keypoints_from_hagrid.np.save")
-    @patch("src.extract_keypoints_from_hagrid.Path.mkdir")
-    @patch("builtins.open")
+    @mock.patch("src.extract_keypoints_from_hagrid.collect_image_paths")
+    @mock.patch("src.extract_keypoints_from_hagrid.cv2.imread")
+    @mock.patch("src.extract_keypoints_from_hagrid.mp_hands.Hands")
+    @mock.patch("src.extract_keypoints_from_hagrid.np.save")
+    @mock.patch("src.extract_keypoints_from_hagrid.Path.mkdir")
+    @mock.patch("builtins.open")
     def test_main_handles_no_hand_detected(
         self,
-        mock_open,
-        mock_mkdir,
-        mock_np_save,
+        _mock_open,
+        _mock_mkdir,
+        _mock_np_save,
         mock_hands_class,
         mock_imread,
         mock_collect,
-    ):
+    ):  # pylint: disable=too-many-arguments
 
         mock_collect.return_value = [(Path("fake/img.jpg"), 0)]
-
         mock_imread.return_value = np.zeros((100, 100, 3), dtype=np.uint8)
-
         mock_hands_instance = mock_hands_class.return_value.__enter__.return_value
-
         mock_process_result = unittest.mock.MagicMock()
         mock_process_result.multi_hand_landmarks = None
         mock_hands_instance.process.return_value = mock_process_result
