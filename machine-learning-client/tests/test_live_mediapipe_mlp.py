@@ -275,3 +275,96 @@ class TestMainLoopOnce(unittest.TestCase):
 
             self.assertGreaterEqual(len(inserted), 1)
             self.assertIn(inserted[0]["gesture"], fake_classes)
+
+
+class TestShouldCapture(unittest.TestCase):
+    """Tests for the should_capture() function."""
+
+    def test_should_capture_doc_is_none(self):
+        """Test the case where the control document doesn't exist."""
+        # Mock the collection to return None
+        lm.controls_collection = mock.Mock()
+        lm.controls_collection.find_one.return_value = None
+        
+        # This covers line 55-56 in live_mediapipe_mlp.py
+        self.assertFalse(lm.should_capture())
+
+    def test_should_capture_enabled_false(self):
+        """Test the case where the 'enabled' key is False or missing."""
+        lm.controls_collection = mock.Mock()
+        
+        # Test if doc exists but 'enabled' key is missing
+        lm.controls_collection.find_one.return_value = {"_id": "capture_control"}
+        self.assertFalse(lm.should_capture())
+        
+        # Test if 'enabled' key is explicitly False
+        lm.controls_collection.find_one.return_value = {"_id": "capture_control", "enabled": False}
+        self.assertFalse(lm.should_capture())
+
+
+class TestInitDbErrors(unittest.TestCase):
+    """Tests for error paths in init_db()."""
+
+    @mock.patch("src.live_mediapipe_mlp.MongoClient")
+    def test_init_db_already_initialized(self, mock_mongo_client):
+        """Test the 'if mongo_client is not None' path (line 36)."""
+        # Set a fake client to simulate it's already initialized
+        lm.mongo_client = mock.MagicMock()
+        lm.init_db()
+        
+        # Assert that MongoClient was NOT called again
+        mock_mongo_client.assert_not_called()
+        
+        # Cleanup global state
+        lm.mongo_client = None
+
+    @mock.patch("src.live_mediapipe_mlp.MongoClient")
+    def test_init_db_connection_error(self, mock_mongo_client):
+        """Test the 'except PyMongoError' block (lines 43-45)."""
+        # Make the client raise an error on ping
+        mock_mongo_client.return_value.admin.command.side_effect = lm.PyMongoError("Connection failed")
+        
+        # Reset global state
+        lm.mongo_client = None 
+        lm.mongo_db = None
+        lm.gesture_collection = None
+        
+        lm.init_db()
+        
+        # Assert that the global variables are still None after failure
+        self.assertIsNone(lm.mongo_db)
+        self.assertIsNone(lm.gesture_collection)
+
+
+class TestMainLoopCaptureOff(unittest.TestCase):
+    """Tests the main() loop when capture is disabled."""
+
+    @mock.patch("src.live_mediapipe_mlp.should_capture", return_value=False)
+    @mock.patch("src.live_mediapipe_mlp.cv2")
+    @mock.patch("src.live_mediapipe_mlp.init_db")
+    @mock.patch("src.live_mediapipe_mlp.load_model")
+    def test_main_loop_capture_off_path(
+        self,
+        mock_load_model,
+        mock_init_db,
+        mock_cv2,
+        mock_should_capture
+    ):
+        """Test the 'if not should_capture()' block in main() (lines 147-161)."""
+        
+        # Make waitKey return 'q' to exit the loop immediately
+        mock_cv2.waitKey.return_value = ord("q") 
+        
+        lm.main()
+        
+        # Assert that the "Capture OFF" text was shown
+        mock_cv2.putText.assert_called_with(
+            mock.ANY, # the np.zeros frame
+            "Capture OFF",
+            (160, 240),
+            mock.ANY, 1.5, (0, 0, 255), 4
+        )
+        mock_cv2.imshow.assert_called_once()
+        
+        # Assert the main processing logic (like hand processing) was NOT called
+        mock_cv2.VideoCapture.return_value.read.assert_not_called()
