@@ -54,21 +54,19 @@ class TestCollectImagePaths(unittest.TestCase):
         """Test collection, filtering, and shuffling of image paths."""
 
         mock_exists.return_value = True
-        
+
         mock_paths = [
             Path("fake/palm/1.jpg"),
-            Path("fake/palm/2.png"), 
-            Path("fake/palm/3.txt"), 
-            Path("fake/palm/4.JPG"), 
-            Path("fake/palm/archive.zip"), 
+            Path("fake/palm/2.png"),
+            Path("fake/palm/3.txt"),
+            Path("fake/palm/4.JPG"),
+            Path("fake/palm/archive.zip"),
         ]
         mock_rglob.return_value = mock_paths
 
-        samples = hagrid_mod.collect_image_paths(
-            Path("fake/"), ["palm"], 10
-        )
+        samples = hagrid_mod.collect_image_paths(Path("fake/"), ["palm"], 10)
 
-        self.assertEqual(len(samples), 3) 
+        self.assertEqual(len(samples), 3)
 
         self.assertIn((Path("fake/palm/1.jpg"), 0), samples)
         self.assertIn((Path("fake/palm/2.png"), 0), samples)
@@ -79,6 +77,6 @@ class TestCollectImagePaths(unittest.TestCase):
     @mock.patch("pathlib.Path.exists", return_value=False)
     def test_collect_paths_dir_not_found(self, mock_exists):
         """Test that it raises FileNotFoundError if class dir doesn't exist."""
-        
+
         with self.assertRaises(FileNotFoundError):
             hagrid_mod.collect_image_paths(Path("fake/"), ["palm"], 10)
