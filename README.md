@@ -6,7 +6,7 @@ Build a containerized app that uses machine learning. See [instructions](./instr
 
 # Teammates
 
-Ivan Wang, [Harrison Gao](https://github.com/HTK-G), [Sina Liu](https://github.com/SinaL0123), Serena, Hanqi
+Ivan Wang, [Harrison Gao](https://github.com/HTK-G), [Sina Liu](https://github.com/SinaL0123), [Serena Wang](https://github.com/serena0615), Hanqi
 
 # Machine Learning Client — Hand Gesture Recognition
 
