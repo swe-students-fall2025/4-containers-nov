@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  web-app:
+    build:
+      context: ./web-app
+    container_name: web-app
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017"
+      MONGO_DB_NAME: "handsense"
+      FLASK_APP: "app.py"
+      FLASK_RUN_HOST: "0.0.0.0"
+    ports:
+      - "5001:5000"
+
+  ml-client:
+    build:
+      context: ./machine-learning-client
+    container_name: ml-client
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017"
+volumes:
+  mongo-data:
