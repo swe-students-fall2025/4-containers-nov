@@ -27,6 +27,115 @@
       <button id="toggle-btn" class="toggle-btn">Start Capture</button>
     </div>
 
+    <section class="dashboard">
+      <div class="dashboard-inner">
+        <div class="dashboard-header">
+          <div>
+            <h2 class="dashboard-title">Gesture Dashboard</h2>
+            <p class="dashboard-subtitle">
+              Live gesture data sent from the ML client into MongoDB.
+            </p>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <div class="stat-card">
+            <div class="stat-label">Total Events</div>
+            <div class="stat-value">{{ total_count }}</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">Gesture Breakdown</div>
+            {% if gesture_stats %}
+            <ul class="gesture-list">
+              {% for g in gesture_stats %}
+              <li class="gesture-list-item">
+                <span class="gesture-name">{{ g["_id"] or "Unknown" }}</span>
+                <span class="gesture-count">{{ g["count"] }}×</span>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-text">No gestures recorded yet.</div>
+            {% endif %}
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">Latest Event</div>
+            {% if latest %}
+            <div class="latest-block">
+              <div class="latest-gesture">
+                {{ latest.get("gesture", "Unknown") }}
+              </div>
+              <div class="latest-meta">
+                Confidence:
+                {% if latest.get("confidence") is not none %}
+                {{ "%.2f"|format(latest["confidence"]) }}
+                {% else %}
+                -
+                {% endif %}
+                <span class="dot-separator">•</span>
+                Hand:
+                {{ latest.get("handedness", "N/A") }}
+              </div>
+              <div class="latest-time">
+                {{ latest.get("timestamp_display") }}
+              </div>
+            </div>
+            {% else %}
+            <div class="empty-text">Waiting for first event…</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="table-card">
+          <h3 class="table-title">Recent Events</h3>
+
+          {% if recent_events %}
+          <div class="table-wrapper">
+            <table class="events-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Gesture</th>
+                  <th>Confidence</th>
+                  <th>Handedness</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for e in recent_events %}
+                <tr>
+                  <td class="col-timestamp">
+                    {{ e.get("timestamp_display") }}
+                  </td>
+                  <td class="col-gesture">
+                    {{ e.get("gesture", "Unknown") }}
+                  </td>
+                  <td class="col-confidence">
+                    {% if e.get("confidence") is not none %}
+                    {{ "%.2f"|format(e["confidence"]) }}
+                    {% else %}
+                    -
+                    {% endif %}
+                  </td>
+                  <td class="col-handedness">
+                    {{ e.get("handedness", "N/A") }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-text">
+            No events yet. Once the ML client starts capturing, they will appear
+            here.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>

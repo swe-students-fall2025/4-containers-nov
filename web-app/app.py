@@ -1,7 +1,25 @@
+from datetime import datetime
+
 import os
 from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
+
+
+def format_ts(raw):
+    """Format timestamp for display in templates"""
+    if isinstance(raw, datetime):
+        return raw.strftime("%Y-%m-%d %H:%M:%S")
+
+    if isinstance(raw, str):
+        try:
+            dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            return raw
+
+    return raw
+
 
 app = Flask(__name__)
 
@@ -29,7 +47,39 @@ print("📁 Collections:", events, controls)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    # recent 50 events
+    if hasattr(events, "find"):
+        recent_events = list(events.find().sort("timestamp", -1).limit(50))
+    else:
+        recent_events = []
+
+    for e in recent_events:
+        e["timestamp_display"] = format_ts(e.get("timestamp"))
+
+    if hasattr(events, "count_documents"):
+        total_count = events.count_documents({})
+    else:
+        total_count = len(recent_events)
+
+    pipeline = [
+        {"$group": {"_id": "$gesture", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+    ]
+
+    if hasattr(events, "aggregate"):
+        gesture_stats = list(events.aggregate(pipeline))
+    else:
+        gesture_stats = []
+
+    latest = recent_events[0] if recent_events else None
+
+    return render_template(
+        "index.html",
+        latest=latest,
+        recent_events=recent_events,
+        total_count=total_count,
+        gesture_stats=gesture_stats,
+    )
 
 
 @app.route("/api/latest")

@@ -1,5 +1,9 @@
 """Basic integration tests for the Flask web app."""
 
+from datetime import datetime
+# pylint: disable=import-error
+from app import format_ts
+
 
 def test_index_page_renders(client):
     """Root path should return HTML page."""
@@ -61,3 +65,23 @@ def test_control_toggle_updates_status(client, fake_controls):
     # Now /api/control/status should return enabled = True
     status_after = client.get("/api/control/status").get_json()
     assert status_after["enabled"] is True
+
+
+def test_format_ts_with_datetime():
+    """Datetime object should be formatted correctly."""
+    dt = datetime(2025, 1, 1, 10, 30, 0)
+    formatted = format_ts(dt)
+    assert formatted == "2025-01-01 10:30:00"
+
+
+def test_format_ts_with_iso_string():
+    """ISO timestamp string should be parsed and formatted correctly."""
+    raw = "2025-01-01T15:45:30"
+    formatted = format_ts(raw)
+    assert formatted == "2025-01-01 15:45:30"
+
+
+def test_format_ts_bad_string_returns_raw():
+    """Invalid timestamp string should be returned unchanged."""
+    raw = "not-a-timestamp"
+    assert format_ts(raw) == raw
