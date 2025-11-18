@@ -1,7 +1,8 @@
 """Unit tests for extract_keypoints_from_hagrid module."""
 
 # pylint: disable=import-error,too-few-public-methods
-
+import tempfile
+import shutil
 import unittest
 from unittest import mock
 from pathlib import Path
@@ -46,6 +47,51 @@ class TestExtractLandmarkVector(unittest.TestCase):
 
 class TestCollectImagePaths(unittest.TestCase):
     """Tests for collect_image_paths (lines 36-68)."""
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.root_path = Path(self.temp_dir)
+        (self.root_path / "palm").mkdir()
+        (self.root_path / "palm" / "img1.jpg").touch()
+        (self.root_path / "palm" / "img2.png").touch()
+        (self.root_path / "fist").mkdir()
+        (self.root_path / "fist" / "img3.jpeg").touch()
+
+        (self.root_path / "empty_class").mkdir()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_happy_path_collects_files(self):
+        classes = ["palm", "fist"]
+        samples = hagrid_mod.collect_image_paths(
+            self.root_path, classes, max_per_class=100
+        )
+
+        self.assertEqual(len(samples), 3)
+
+        labels = {label for (path, label) in samples}
+        self.assertEqual(labels, {0, 1})
+
+    def test_max_per_class_limit(self):
+        classes = ["palm"]
+        samples = hagrid_mod.collect_image_paths(
+            self.root_path, classes, max_per_class=1
+        )
+
+        self.assertEqual(len(samples), 1)
+
+    def test_missing_class_folder_raises_error(self):
+        classes = ["stop"]
+
+        with self.assertRaises(FileNotFoundError):
+            hagrid_mod.collect_image_paths(self.root_path, classes, max_per_class=100)
+
+    def test_empty_class_folder_raises_error(self):
+        classes = ["empty_class"]
+
+        with self.assertRaises(RuntimeError):
+            hagrid_mod.collect_image_paths(self.root_path, classes, max_per_class=100)
 
     @mock.patch("pathlib.Path.is_file", return_value=True)
     @mock.patch("src.extract_keypoints_from_hagrid.random.shuffle")
