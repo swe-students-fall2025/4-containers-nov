@@ -55,5 +55,5 @@ jobs:
           echo "Listing all files recursively..."
           ls -R
 
-      - name: Run tests with coverage
-        run: PYTHONPATH=. pipenv run pytest --cov=src --cov-report=term-missing --cov-fail-under=80
+      - name: Run tests with coverge
+        run: PYTHONPATH=. pipenv run pytest --cov=src --cov-report=term-missing --cov-fail-under=80
