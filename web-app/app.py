@@ -51,6 +51,7 @@ def index():
     if hasattr(events, "find"):
         recent_events = list(events.find().sort("timestamp", -1).limit(50))
     else:
+        # For testing with fake collections
         recent_events = []
 
     for e in recent_events:
