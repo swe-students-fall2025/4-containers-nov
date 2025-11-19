@@ -13,7 +13,7 @@ Ivan Wang, [Harrison Gao](https://github.com/HTK-G), [Sina Liu](https://github.c
 This folder contains the **machine-learning-client** subsystem of our 3-container project:
 
 - **Machine Learning Client** → collects sensor data (webcam), performs gesture recognition with MediaPipe + PyTorch, and later sends results to MongoDB.
-- **Web App** (TBD) → visualizes gesture events stored in the database.
+- **Web App** → visualizes gesture events stored in the database.
 - **MongoDB** → central datastore for gesture metadata.
 
 The ML client runs entirely as a _backend service_ (no user-facing UI).  

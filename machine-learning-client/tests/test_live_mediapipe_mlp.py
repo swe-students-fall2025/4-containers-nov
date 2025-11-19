@@ -293,16 +293,16 @@ class TestShouldCapture(unittest.TestCase):
     #     """Test the case where the 'enabled' key is False or missing."""
     #     lm.controls_collection = mock.Mock()
 
-        # Test if doc exists but 'enabled' key is missing
-        # lm.controls_collection.find_one.return_value = {"_id": "capture_control"}
-        # self.assertFalse(lm.should_capture())
+    # Test if doc exists but 'enabled' key is missing
+    # lm.controls_collection.find_one.return_value = {"_id": "capture_control"}
+    # self.assertFalse(lm.should_capture())
 
-        # # Test if 'enabled' key is explicitly False
-        # lm.controls_collection.find_one.return_value = {
-        #     "_id": "capture_control",
-        #     "enabled": False,
-        # }
-        # self.assertFalse(lm.should_capture())
+    # # Test if 'enabled' key is explicitly False
+    # lm.controls_collection.find_one.return_value = {
+    #     "_id": "capture_control",
+    #     "enabled": False,
+    # }
+    # self.assertFalse(lm.should_capture())
 
 
 class TestInitDbErrors(unittest.TestCase):
