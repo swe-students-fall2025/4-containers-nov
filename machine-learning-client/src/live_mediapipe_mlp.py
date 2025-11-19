@@ -67,6 +67,7 @@ def init_db() -> None:
 _last_check_time = 0
 _cached_capture_state = False
 
+
 def should_capture(rate_limit=0.5):
     """Only hit DB at most once every rate_limit seconds."""
     global _last_check_time, _cached_capture_state
@@ -75,14 +76,10 @@ def should_capture(rate_limit=0.5):
     if now - _last_check_time < rate_limit:
         return _cached_capture_state
 
-    doc = controls_collection.find_one(
-        {"_id": "capture_control"},
-        {"enabled": 1}
-    )
+    doc = controls_collection.find_one({"_id": "capture_control"}, {"enabled": 1})
     _cached_capture_state = bool(doc.get("enabled", False)) if doc else False
     _last_check_time = now
     return _cached_capture_state
-
 
 
 class GestureMLP(torch.nn.Module):
