@@ -23,31 +23,67 @@ It processes camera input, performs ML inference, and will later communicate wit
 
 # 1. Project Structure
 
-## Project Structure — Machine Learning Client
+## Project Structure
 
 ```text
-machine-learning-client/
-│
-├── data/
-│   ├── hagrid_keypoints_X.npy        # extracted keypoint features (N x 63)
-│   ├── hagrid_keypoints_y.npy        # integer labels (N,)
-│   └── hagrid_classes.json           # gesture class list
-│
-├── models/
-│   ├── gesture_mlp.pt                # trained PyTorch MLP model (.pt)
-│   └── train_mlp.py                  # training script for the MLP
-│
-├── src/
-│   ├── extract_keypoints_from_hagrid.py   # offline feature extractor (HaGRID → keypoints)
-│   ├── live_mediapipe_mlp.py              # live webcam demo (MediaPipe + PyTorch)
-│   └── ...                                # other helper scripts (if any)
-│
-├── tests/                                 # pytest unit tests (to be implemented)
-│
-├── Pipfile                                # pipenv dependencies
-├── Pipfile.lock
-├── .pylintrc                              # lint rules (used by both local & CI)
-└── README.md                              # documentation for ML Client
+├── docker-compose.yml
+├── instructions.md
+├── LICENSE
+├── machine-learning-client
+│   ├── data
+│   │   ├── hagrid_keypoints_X.npy
+│   │   └── hagrid_keypoints_y.npy
+│   ├── Dockerfile
+│   ├── models
+│   │   ├── gesture_mlp.pt
+│   │   └── train_mlp.py
+│   ├── Pipfile
+│   ├── Pipfile.lock
+│   ├── src
+│   │   ├── __init__.py
+│   │   ├── extract_keypoints_from_hagrid.py
+│   │   └── live_mediapipe_mlp.py
+│   └── tests
+│       ├── __init__.py
+│       ├── test_extract_keypoints_from_hagrid.py
+│       └── test_live_mediapipe_mlp.py
+├── README.md
+└── web-app
+    ├── app.py
+    ├── Dockerfile
+    ├── Pipfile
+    ├── Pipfile.lock
+    ├── readme.txt
+    ├── static
+    │   ├── audios
+    │   │   ├── among_us.mp3
+    │   │   ├── android_beep.mp3
+    │   │   ├── bom.mp3
+    │   │   ├── error.mp3
+    │   │   ├── playme.mp3
+    │   │   ├── rick_roll.mp3
+    │   │   ├── rizz.mp3
+    │   │   ├── sponge_bob.mp3
+    │   │   └── uwu.mp3
+    │   ├── hagrid_classes.json
+    │   ├── images
+    │   │   ├── fist.png
+    │   │   ├── like.png
+    │   │   ├── ok.png
+    │   │   ├── one.png
+    │   │   ├── palm.png
+    │   │   ├── stop.png
+    │   │   ├── thinking.png
+    │   │   ├── three.png
+    │   │   └── two_up.png
+    │   ├── script.js
+    │   └── style.css
+    ├── templates
+    │   └── index.html
+    └── tests
+        ├──   __init__.py
+        ├── conftest.py
+        └── test_app.py
 ```
 
 # 2. Environment Setup (macOS, M-series)
