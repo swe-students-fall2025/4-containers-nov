@@ -125,6 +125,52 @@ def get_control_status():
     return jsonify({"enabled": doc.get("enabled", False)})
 
 
+@app.route("/api/latest_full")
+def get_latest_full():
+    doc = events.find_one(sort=[("timestamp", -1)])
+    if not doc:
+        return jsonify({"exists": False})
+
+    return jsonify({
+        "exists": True,
+        "gesture": doc.get("gesture"),
+        "confidence": doc.get("confidence"),
+        "handedness": doc.get("handedness"),
+        "timestamp_display": format_ts(doc.get("timestamp")),
+    })
+
+@app.route("/api/dashboard")
+def get_dashboard():
+    # total count
+    total_count = events.count_documents({})
+
+    # gesture breakdown
+    pipeline = [
+        {"$group": {"_id": "$gesture", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+    ]
+    gesture_stats = list(events.aggregate(pipeline))
+
+    # recent events (clean)
+    recent_clean = []
+    cursor = events.find().sort("timestamp", -1).limit(50)
+
+    for doc in cursor:
+        recent_clean.append({
+            "timestamp_display": format_ts(doc.get("timestamp")),
+            "gesture": doc.get("gesture") or "Unknown",
+            "confidence": doc.get("confidence"),
+            "handedness": doc.get("handedness") or "N/A",
+        })
+
+    return jsonify({
+        "total_count": total_count,
+        "gesture_stats": gesture_stats,
+        "recent": recent_clean
+    })
+
+
+
 if __name__ == "__main__":
     # For development testing; use gunicorn in production
     app.run(host="0.0.0.0", port=5000)
