@@ -56,12 +56,33 @@ def init_db() -> None:
         print("[INFO] Initialized capture_control = False")
 
 
-def should_capture() -> bool:
-    """Read capture state from DB (Flask updates this)."""
-    doc = controls_collection.find_one({"_id": "capture_control"})
-    if doc is None:
-        return False
-    return bool(doc.get("enabled", False))
+# def should_capture() -> bool:
+#     """Read capture state from DB (Flask updates this)."""
+#     doc = controls_collection.find_one({"_id": "capture_control"})
+#     if doc is None:
+#         return False
+#     return bool(doc.get("enabled", False))
+
+# --- Cache capture state to avoid hitting DB every frame ---
+_last_check_time = 0
+_cached_capture_state = False
+
+def should_capture(rate_limit=0.5):
+    """Only hit DB at most once every rate_limit seconds."""
+    global _last_check_time, _cached_capture_state
+
+    now = time.time()
+    if now - _last_check_time < rate_limit:
+        return _cached_capture_state
+
+    doc = controls_collection.find_one(
+        {"_id": "capture_control"},
+        {"enabled": 1}
+    )
+    _cached_capture_state = bool(doc.get("enabled", False)) if doc else False
+    _last_check_time = now
+    return _cached_capture_state
+
 
 
 class GestureMLP(torch.nn.Module):
