@@ -1,26 +1,30 @@
 .
+├── docker-compose.yml
 ├── instructions.md
 ├── LICENSE
 ├── machine-learning-client
 │   ├── data
 │   │   ├── hagrid_keypoints_X.npy
 │   │   └── hagrid_keypoints_y.npy
+│   ├── Dockerfile
 │   ├── models
 │   │   ├── gesture_mlp.pt
 │   │   └── train_mlp.py
 │   ├── Pipfile
 │   ├── Pipfile.lock
 │   ├── src
+│   │   ├── __init__.py
 │   │   ├── extract_keypoints_from_hagrid.py
 │   │   └── live_mediapipe_mlp.py
-│   ├── test_mongo.py
 │   └── tests
-│       ├── test_extract_keypoints_from_hagrid_unittest.py
-│       └── test_live_mediapipe_mlp_unittest.py
+│       ├── __init__.py
+│       ├── test_extract_keypoints_from_hagrid.py
+│       └── test_live_mediapipe_mlp.py
 ├── README.md
 ├── tree.txt
 └── web-app
     ├── app.py
+    ├── Dockerfile
     ├── Pipfile
     ├── Pipfile.lock
     ├── readme.txt
@@ -50,7 +54,9 @@
     │   └── style.css
     ├── templates
     │   └── index.html
-    ├── test_pymongo.py
     └── tests
+        ├──   __init__.py
+        ├── conftest.py
+        └── test_app.py
 
-12 directories, 42 files
+12 directories, 48 files

@@ -11,6 +11,7 @@ pytest = "*"
 pytest-flask = "*"
 black = "*"
 pylint = "*"
+colorama = "*"
 
 [dev-packages]
 black = "*"

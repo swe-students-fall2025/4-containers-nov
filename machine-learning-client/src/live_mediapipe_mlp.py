@@ -56,12 +56,48 @@ def init_db() -> None:
         print("[INFO] Initialized capture_control = False")
 
 
-def should_capture() -> bool:
-    """Read capture state from DB (Flask updates this)."""
-    doc = controls_collection.find_one({"_id": "capture_control"})
-    if doc is None:
+# def should_capture() -> bool:
+#     """Read capture state from DB (Flask updates this)."""
+#     doc = controls_collection.find_one({"_id": "capture_control"})
+#     if doc is None:
+#         return False
+#     return bool(doc.get("enabled", False))
+
+# --- Cache capture state to avoid hitting DB every frame ---
+# _last_check_time = 0
+# _cached_capture_state = False
+
+
+# def should_capture(rate_limit=0.5):
+#     """Only hit DB at most once every rate_limit seconds."""
+#     global _last_check_time, _cached_capture_state
+
+#     now = time.time()
+#     if now - _last_check_time < rate_limit:
+#         return _cached_capture_state
+
+#     doc = controls_collection.find_one({"_id": "capture_control"}, {"enabled": 1})
+#     _cached_capture_state = bool(doc.get("enabled", False)) if doc else False
+#     _last_check_time = now
+#     return _cached_capture_state
+
+
+def should_capture(_rate_limit: float = 0.5) -> bool:
+    """
+    Check whether gesture capture should be enabled.
+
+    For simplicity and testability, this function avoids client-side caching
+    or rate limiting. It performs a direct MongoDB lookup every time.
+    """
+    # If the database has not been initialized, safely return False
+    if controls_collection is None:
         return False
-    return bool(doc.get("enabled", False))
+
+    # Fetch capture state from the control document
+    doc = controls_collection.find_one({"_id": "capture_control"}, {"enabled": 1})
+
+    # If doc is None or missing the 'enabled' field, treat it as disabled
+    return bool(doc.get("enabled", False)) if doc else False
 
 
 class GestureMLP(torch.nn.Module):
