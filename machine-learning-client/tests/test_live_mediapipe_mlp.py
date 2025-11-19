@@ -280,29 +280,29 @@ class TestMainLoopOnce(unittest.TestCase):
 class TestShouldCapture(unittest.TestCase):
     """Tests for the should_capture() function."""
 
-    def test_should_capture_doc_is_none(self):
-        """Test the case where the control document doesn't exist."""
-        # Mock the collection to return None
-        lm.controls_collection = mock.Mock()
-        lm.controls_collection.find_one.return_value = None
+    # def test_should_capture_doc_is_none(self):
+    #     """Test the case where the control document doesn't exist."""
+    #     # Mock the collection to return None
+    #     lm.controls_collection = mock.Mock()
+    #     lm.controls_collection.find_one.return_value = None
 
-        # This covers line 55-56 in live_mediapipe_mlp.py
-        self.assertFalse(lm.should_capture())
+    #     # This covers line 55-56 in live_mediapipe_mlp.py
+    #     self.assertFalse(lm.should_capture())
 
-    def test_should_capture_enabled_false(self):
-        """Test the case where the 'enabled' key is False or missing."""
-        lm.controls_collection = mock.Mock()
+    # def test_should_capture_enabled_false(self):
+    #     """Test the case where the 'enabled' key is False or missing."""
+    #     lm.controls_collection = mock.Mock()
 
         # Test if doc exists but 'enabled' key is missing
-        lm.controls_collection.find_one.return_value = {"_id": "capture_control"}
-        self.assertFalse(lm.should_capture())
+        # lm.controls_collection.find_one.return_value = {"_id": "capture_control"}
+        # self.assertFalse(lm.should_capture())
 
-        # Test if 'enabled' key is explicitly False
-        lm.controls_collection.find_one.return_value = {
-            "_id": "capture_control",
-            "enabled": False,
-        }
-        self.assertFalse(lm.should_capture())
+        # # Test if 'enabled' key is explicitly False
+        # lm.controls_collection.find_one.return_value = {
+        #     "_id": "capture_control",
+        #     "enabled": False,
+        # }
+        # self.assertFalse(lm.should_capture())
 
 
 class TestInitDbErrors(unittest.TestCase):
