@@ -131,13 +131,16 @@ def get_latest_full():
     if not doc:
         return jsonify({"exists": False})
 
-    return jsonify({
-        "exists": True,
-        "gesture": doc.get("gesture"),
-        "confidence": doc.get("confidence"),
-        "handedness": doc.get("handedness"),
-        "timestamp_display": format_ts(doc.get("timestamp")),
-    })
+    return jsonify(
+        {
+            "exists": True,
+            "gesture": doc.get("gesture"),
+            "confidence": doc.get("confidence"),
+            "handedness": doc.get("handedness"),
+            "timestamp_display": format_ts(doc.get("timestamp")),
+        }
+    )
+
 
 @app.route("/api/dashboard")
 def get_dashboard():
@@ -156,19 +159,22 @@ def get_dashboard():
     cursor = events.find().sort("timestamp", -1).limit(50)
 
     for doc in cursor:
-        recent_clean.append({
-            "timestamp_display": format_ts(doc.get("timestamp")),
-            "gesture": doc.get("gesture") or "Unknown",
-            "confidence": doc.get("confidence"),
-            "handedness": doc.get("handedness") or "N/A",
-        })
+        recent_clean.append(
+            {
+                "timestamp_display": format_ts(doc.get("timestamp")),
+                "gesture": doc.get("gesture") or "Unknown",
+                "confidence": doc.get("confidence"),
+                "handedness": doc.get("handedness") or "N/A",
+            }
+        )
 
-    return jsonify({
-        "total_count": total_count,
-        "gesture_stats": gesture_stats,
-        "recent": recent_clean
-    })
-
+    return jsonify(
+        {
+            "total_count": total_count,
+            "gesture_stats": gesture_stats,
+            "recent": recent_clean,
+        }
+    )
 
 
 if __name__ == "__main__":
